@@ -11,7 +11,7 @@ namespace Tests
         [TestMethod]
         public void TestSortedValues()
         {
-            var tree = new BinaryTree<int>();
+            var tree = new BinarySearchTree<int>();
 
             var size = 100000;
             var numbers = new int[size];
@@ -19,7 +19,7 @@ namespace Tests
             for (int i = 0; i < size; i++)
             {
                 numbers[i] = rand.Next(0, size);
-                tree.Insert(numbers[i]);
+                tree.Add(numbers[i]);
             }
 
             Array.Sort(numbers);
@@ -33,22 +33,22 @@ namespace Tests
         [TestMethod]
         public void TestTreeCount()
         {
-            var tree = new BinaryTree<int>();
+            var tree = new BinarySearchTree<int>();
             var size = 100;
 
             Node<int> node = null;
             for (int i = 0; i < size; i++)
             {
-                node = tree.Insert(i);
+                node = tree.Add(i);
             }
 
             Assert.AreEqual(tree.Count, size);
 
-            tree.Delete(node);
+            tree.Remove(node);
 
             Assert.AreEqual(tree.Count, size - 1);
 
-            tree.Insert(101);
+            tree.Add(101);
 
             Assert.AreEqual(tree.Count, size);
         }
@@ -56,10 +56,10 @@ namespace Tests
         [TestMethod]
         public void TestIsEmpty()
         {
-            var tree = new BinaryTree<string>();
+            var tree = new BinarySearchTree<string>();
             Assert.IsTrue(tree.IsEmpty);
 
-            tree.Insert("a");
+            tree.Add("a");
 
             Assert.IsFalse(tree.IsEmpty);
         }
@@ -67,7 +67,7 @@ namespace Tests
         [TestMethod]
         public void TestGetMaximum()
         {
-            var tree = new BinaryTree<int>();
+            var tree = new BinarySearchTree<int>();
 
             try
             {
@@ -82,7 +82,7 @@ namespace Tests
             var size = 100;
             for (int i = 0; i < size; i++)
             {
-                tree.Insert(i);
+                tree.Add(i);
             }
 
             Assert.AreEqual(tree.GetMaximum(), size - 1);
@@ -91,7 +91,7 @@ namespace Tests
         [TestMethod]
         public void TestGetMinimum()
         {
-            var tree = new BinaryTree<int>();
+            var tree = new BinarySearchTree<int>();
 
             try
             {
@@ -106,7 +106,7 @@ namespace Tests
             var size = 100;
             for (int i = 0; i < size; i++)
             {
-                tree.Insert(i);
+                tree.Add(i);
             }
 
             Assert.AreEqual(tree.GetMinimum(), 0);
@@ -115,7 +115,7 @@ namespace Tests
         [TestMethod]
         public void TestGetValues()
         {
-            var tree = new BinaryTree<int>();
+            var tree = new BinarySearchTree<int>();
 
             var size = 10000;
             var random = new Random();
@@ -123,10 +123,10 @@ namespace Tests
             for (int i = 0; i < size; i++)
             {
                 numbers[i] = random.Next();
-                tree.Insert(numbers[i]);
+                tree.Add(numbers[i]);
             }
 
-            var values = tree.GetValues().ToList();
+            var values = tree.ToList();
 
             Assert.AreEqual(values.Count, numbers.Length);
 
@@ -142,11 +142,11 @@ namespace Tests
         [TestMethod]
         public void TestDelete()
         {
-            var tree = new BinaryTree<int>();
+            var tree = new BinarySearchTree<int>();
             var size = 10;
             for (int i = 0; i < size; i++)
             {
-                tree.Insert(i);
+                tree.Add(i);
             }
 
             Assert.AreEqual(tree.Count, size);
@@ -155,7 +155,7 @@ namespace Tests
             for (int i = 0; i < size; i++)
             {
                 tree.TryGetNode(i, out node);
-                tree.Delete(node);
+                tree.Remove(node);
             }
 
             Assert.AreEqual(tree.Count, 0);
@@ -165,11 +165,11 @@ namespace Tests
         [TestMethod]
         public void TestTryGet()
         {
-            var tree = new BinaryTree<int>();
+            var tree = new BinarySearchTree<int>();
             var size = 10;
             for (int i = 0; i < size; i++)
             {
-                tree.Insert(i);
+                tree.Add(i);
             }
 
             Node<int> node;
@@ -184,11 +184,11 @@ namespace Tests
         [TestMethod]
         public void TestContains()
         {
-            var tree = new BinaryTree<int>();
+            var tree = new BinarySearchTree<int>();
             var size = 10;
             for (int i = 0; i < size; i++)
             {
-                tree.Insert(i);
+                tree.Add(i);
             }
 
             for (int i = 0; i < size; i++)
@@ -202,12 +202,12 @@ namespace Tests
         [TestMethod]
         public void TestGetSuccessor()
         {
-            var tree = new BinaryTree<int>();
+            var tree = new BinarySearchTree<int>();
             var size = 10;
             Node<int> node = null;
             for (int i = 0; i < size; i++)
             {
-                node = tree.Insert(i);
+                node = tree.Add(i);
             }
 
             for (int i = 0; i < size; i++)
@@ -224,12 +224,12 @@ namespace Tests
         [TestMethod]
         public void TestGetPredecessor()
         {
-            var tree = new BinaryTree<int>();
+            var tree = new BinarySearchTree<int>();
             var size = 10;
             Node<int> node = null;
             for (int i = 0; i < size; i++)
             {
-                node = tree.Insert(i);
+                node = tree.Add(i);
             }
 
             for (int i = size - 1; i >= 0; i--)
@@ -241,6 +241,21 @@ namespace Tests
                 else
                     Assert.IsNull(prev);
             }
+        }
+
+        [TestMethod]
+        public void TestClear()
+        {
+            var tree = new BinarySearchTree<int>();
+            var size = 10;
+            for (int i = 0; i < size; i++)
+            {
+                tree.Add(i);
+            }
+
+            tree.Clear();
+            Assert.AreEqual(tree.Count, 0);
+            Assert.IsTrue(tree.IsEmpty);
         }
     }
 }

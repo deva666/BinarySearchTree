@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+
 
 namespace MarkoDevcic
 {
-    public class BinaryTree<T> where T : IComparable<T>
+    public class BinarySearchTree<T> : ICollection<T> where T : IComparable<T>
     {
         private Int32 size;
 
@@ -14,9 +18,22 @@ namespace MarkoDevcic
             get { return root == null; }
         }
 
-        public Int32 Count { get { return size; } }
+        public bool IsReadOnly
+        {
+            get { return false; }
+        }
 
-        public Node<T> Insert(T value)
+        public Int32 Count
+        {
+            get { return size; }
+        }
+
+        void ICollection<T>.Add(T value)
+        {
+            Add(value);
+        }
+
+        public Node<T> Add(T value)
         {
             size++;
 
@@ -47,7 +64,22 @@ namespace MarkoDevcic
         }
 
 
-        public void Delete(Node<T> node)
+        public bool Remove(T value)
+        {
+            var node = IterativeTreeSearch(value);
+            if (node != null)
+            {
+                Remove(node);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+        public void Remove(Node<T> node)
         {
             if (node == null)
                 throw new ArgumentNullException("null");
@@ -81,13 +113,12 @@ namespace MarkoDevcic
             size--;
         }
 
-
-        public IEnumerable<T> GetValues()
+        public void Clear()
         {
-            var values = new List<T>();
-            PreorderTreeWalk(root, values);
-            return values;
+            root = null;
+            size = 0;
         }
+
 
         private void PreorderTreeWalk(Node<T> current, ICollection<T> output)
         {
@@ -116,7 +147,7 @@ namespace MarkoDevcic
             }
         }
 
-        private IEnumerable<T> IterativePreorderTreeWalk()
+        private IEnumerator<T> IterativePreorderTreeWalk()
         {
             if (root == null)
                 yield break;
@@ -135,15 +166,19 @@ namespace MarkoDevcic
                 else
                 {
                     if (stack.Count == 0)
+                    {
                         finished = true;
-
-                    current = stack.Pop();
-                    current = current.Right;
+                    }
+                    else
+                    {
+                        current = stack.Pop();
+                        current = current.Right;
+                    }
                 }
             }
         }
 
-        private IEnumerable<T> IterativeInorderTreeWalk()
+        private IEnumerator<T> IterativeInorderTreeWalk()
         {
             if (root == null)
                 yield break;
@@ -161,7 +196,9 @@ namespace MarkoDevcic
                 else
                 {
                     if (stack.Count == 0)
+                    {
                         finished = true;
+                    }
                     else
                     {
                         current = stack.Pop();
@@ -170,6 +207,19 @@ namespace MarkoDevcic
                     }
                 }
             }
+        }
+
+        public int GetHeight()
+        {
+            return Height(root);
+        }
+
+        private int Height(Node<T> node)
+        {
+            if (node == null)
+                return 0;
+
+            return 1 + Math.Max(Height(node.Left), Height(node.Right));
         }
 
         public T GetMinimum()
@@ -227,18 +277,18 @@ namespace MarkoDevcic
             return node != null;
         }
 
-        private Node<T> TreeSearch(Node<T> node, T value)
+        private Node<T> TreeSearch(Node<T> startNode, T value)
         {
-            if (node == null)
+            if (startNode == null)
                 return null;
 
-            if (node.Value.CompareTo(value) == 0)
-                return node;
+            if (startNode.Value.CompareTo(value) == 0)
+                return startNode;
 
-            if (value.CompareTo(node.Value) < 0)
-                return TreeSearch(node.Left, value);
+            if (value.CompareTo(startNode.Value) < 0)
+                return TreeSearch(startNode.Left, value);
             else
-                return TreeSearch(node.Right, value);
+                return TreeSearch(startNode.Right, value);
         }
 
         private Node<T> IterativeTreeSearch(T value)
@@ -280,7 +330,7 @@ namespace MarkoDevcic
 
         public Node<T> Predecessor(Node<T> node)
         {
-            if (root == null)
+            if (node == null)
                 throw new ArgumentNullException("node");
 
             if (node.Left != null)
@@ -297,9 +347,38 @@ namespace MarkoDevcic
 
             return parent;
         }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return IterativePreorderTreeWalk();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return IterativePreorderTreeWalk();
+        }
+
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            if (array == null)
+                throw new ArgumentNullException("array");
+
+            if (arrayIndex < 0 || arrayIndex > array.Length)
+                throw new ArgumentOutOfRangeException("arrayIndex");
+
+            if (array.Length - arrayIndex < size)
+                throw new InvalidOperationException("array not big enough");
+
+            foreach (var value in this)
+            {
+                array[arrayIndex++] = value;
+            }
+        }
     }
 
-    public sealed class Node<TValue> : IComparable<Node<TValue>> where TValue : IComparable<TValue>
+    public sealed class Node<TValue> : IComparable<Node<TValue>>
+        where TValue : IComparable<TValue>
     {
         public Node<TValue> Left { get; internal set; }
 
@@ -311,14 +390,6 @@ namespace MarkoDevcic
 
         internal Node(TValue value)
         {
-            Value = value;
-        }
-
-        internal Node(Node<TValue> parent, Node<TValue> left, Node<TValue> right, TValue value)
-        {
-            Parent = parent;
-            Left = left;
-            Right = right;
             Value = value;
         }
 
