@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MarkoDevcic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -256,6 +258,45 @@ namespace Tests
             tree.Clear();
             Assert.AreEqual(tree.Count, 0);
             Assert.IsTrue(tree.IsEmpty);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void TestCollectionWasModified()
+        {
+            var tree = new BinarySearchTree<int>();
+            var size = 10000;
+            var random = new Random();
+            for (int i = 0; i < size; i++)
+            {
+                tree.Add(i);
+            }
+
+            Task.Run(() => { Thread.Sleep(1); tree.Add(1); });
+
+            foreach (var item in tree)
+            {
+                for (int i = 0; i < item; i++)
+                {
+                    i *= i;
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestGetHeight()
+        {
+            var tree = new BinarySearchTree<int>();
+            var size = 10000;
+            var random = new Random();
+
+            //building a search tree from sorted values will give unbalanced tree, size should equal to height
+            for (int i = 0; i < size; i++)
+            {
+                tree.Add(i);
+            }
+
+            Assert.AreEqual(tree.GetHeight(), size);
         }
     }
 }

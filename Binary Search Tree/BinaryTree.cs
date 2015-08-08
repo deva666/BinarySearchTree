@@ -3,13 +3,16 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
 
 
 namespace MarkoDevcic
 {
+    [DebuggerDisplay("Count = {Count}")]
     public class BinarySearchTree<T> : ICollection<T> where T : IComparable<T>
     {
         private Int32 size;
+        private volatile Int32 version;
 
         private Node<T> root;
 
@@ -35,11 +38,13 @@ namespace MarkoDevcic
 
         public Node<T> Add(T value)
         {
-            size++;
-
             var node = new Node<T>(value);
             var current = root;
             var parent = default(Node<T>);
+
+            version++;
+            size++;
+
             while (current != null)
             {
                 parent = current;
@@ -48,6 +53,7 @@ namespace MarkoDevcic
                 else
                     current = current.Right;
             }
+
             node.Parent = parent;
             if (parent == null)
             {
@@ -56,9 +62,14 @@ namespace MarkoDevcic
             }
 
             if (value.CompareTo(parent.Value) < 0)
+            {
                 parent.Left = node;
+            }
             else
+            {
                 parent.Right = node;
+            }
+
 
             return node;
         }
@@ -76,7 +87,6 @@ namespace MarkoDevcic
             {
                 return false;
             }
-
         }
 
         public void Remove(Node<T> node)
@@ -111,52 +121,48 @@ namespace MarkoDevcic
                 node.Value = deleteNode.Value;
 
             size--;
+            version++;
         }
 
         public void Clear()
         {
             root = null;
             size = 0;
-        }
-
-
-        private void PreorderTreeWalk(Node<T> current, ICollection<T> output)
-        {
-            if (current != null)
-            {
-                output.Add(current.Value);
-                PreorderTreeWalk(current.Left, output);
-                PreorderTreeWalk(current.Right, output);
-            }
+            version++;
         }
 
         public IEnumerable<T> GetSortedValues()
         {
             var values = new List<T>();
-            InorderTreeWalk(root, values);
+            InorderTreeWalk(root, values, version);
             return values;
         }
 
-        private void InorderTreeWalk(Node<T> current, ICollection<T> output)
+        private void InorderTreeWalk(Node<T> current, ICollection<T> output, Int32 currentVersion)
         {
             if (current != null)
             {
-                InorderTreeWalk(current.Left, output);
+                CheckVersion(currentVersion);
+
+                InorderTreeWalk(current.Left, output, currentVersion);
                 output.Add(current.Value);
-                InorderTreeWalk(current.Right, output);
+                InorderTreeWalk(current.Right, output, currentVersion);
             }
         }
 
-        private IEnumerator<T> IterativePreorderTreeWalk()
+        private IEnumerator<T> IterativePreorderTreeWalk(Int32 currentVersion)
         {
             if (root == null)
                 yield break;
+
 
             var stack = new Stack<Node<T>>();
             var current = root;
             var finished = false;
             while (finished == false)
             {
+                CheckVersion(currentVersion);
+
                 if (current != null)
                 {
                     yield return current.Value;
@@ -350,12 +356,12 @@ namespace MarkoDevcic
 
         public IEnumerator<T> GetEnumerator()
         {
-            return IterativePreorderTreeWalk();
+            return IterativePreorderTreeWalk(version);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return IterativePreorderTreeWalk();
+            return IterativePreorderTreeWalk(version);
         }
 
 
@@ -373,6 +379,14 @@ namespace MarkoDevcic
             foreach (var value in this)
             {
                 array[arrayIndex++] = value;
+            }
+        }
+
+        private void CheckVersion(Int32 currentVersion)
+        {
+            if (version != currentVersion)
+            {
+                throw new InvalidOperationException("Collection was modified");
             }
         }
     }
