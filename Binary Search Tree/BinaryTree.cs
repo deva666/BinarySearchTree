@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
 
+[assembly: InternalsVisibleTo("Binary search tree tests")]
 
 namespace MarkoDevcic
 {

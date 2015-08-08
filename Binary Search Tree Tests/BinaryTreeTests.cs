@@ -272,7 +272,7 @@ namespace Tests
                 tree.Add(i);
             }
 
-            Task.Run(() => { Thread.Sleep(1); tree.Add(1); });
+            Task.Run(() => { tree.Add(1); });
 
             foreach (var item in tree)
             {
@@ -297,6 +297,19 @@ namespace Tests
             }
 
             Assert.AreEqual(tree.GetHeight(), size);
+        }
+
+        [TestMethod]
+        public void TestNodeCompare()
+        {
+            var lowerNode = new Node<int>(1);
+            var lowerNode2 = new Node<int>(1);
+            var higherNode = new Node<int>(2);
+
+            Assert.AreEqual(-1, lowerNode.CompareTo(higherNode));
+            Assert.AreEqual(1, higherNode.CompareTo(lowerNode));
+            Assert.AreEqual(-1, lowerNode.CompareTo(null));
+            Assert.AreEqual(0, lowerNode.CompareTo(lowerNode2));
         }
     }
 }
